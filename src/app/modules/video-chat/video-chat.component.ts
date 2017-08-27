@@ -24,6 +24,8 @@ export class VideoChatComponent implements OnInit {
   msgToken:string = "";
   //本地连接
   rtcPeerConnection:RTCPeerConnection;
+  //
+  tempCandidates:any[] = [];
 
   constructor(private socket:SocketService) { 
     this.callbackId = this.socket.enrollCallback(this.msgProcess.bind(this));
@@ -31,39 +33,46 @@ export class VideoChatComponent implements OnInit {
 
   msgProcess(msg:any){
     // console.log(msg);
-    if(!this.rtcPeerConnection || msg.token == this.msgToken)return;
+    if(!this.rtcPeerConnection)this.createConnection();
+    if(msg.token == this.msgToken)return;
     let content = msg.content;
-    if(this.rtcPeerConnection){
-      switch(content.type){
-        case 'description':
-          this.rtcPeerConnection.setRemoteDescription(content.ref, () => {
-            if(this.rtcPeerConnection.remoteDescription.type == 'offer')
-              this.rtcPeerConnection.createAnswer(this.setDescription.bind(this), err => {
-                console.log('answer:', err);
-              });
-          });
-          break;
-        case 'candidate':
+    switch(content.type){
+      case 'description':
+        this.rtcPeerConnection.setRemoteDescription(content.ref, () => {
+          // console.log('add0', this.tempCandidates.length);
+          while(this.tempCandidates.length > 0)
+            this.rtcPeerConnection.addIceCandidate(this.tempCandidates.pop());
+          
+          if(this.rtcPeerConnection.remoteDescription.type == 'offer')
+            this.rtcPeerConnection.createAnswer(this.setDescription.bind(this), err => {
+              console.log('answer:', err);
+            });
+        });
+        break;
+      case 'candidate':
+        if(!this.rtcPeerConnection.remoteDescription.type){
+          this.tempCandidates.push(content.ref);
+        }else{
           this.rtcPeerConnection.addIceCandidate(content.ref);
-          break;
-      }
+        }
+          
+        break;
     }
   }
 
   setDescription(desc:RTCSessionDescription){
-    if(!this.rtcPeerConnection)return;
+    if(!this.rtcPeerConnection)this.createConnection();
     this.rtcPeerConnection.setLocalDescription(desc, () => {
       if(!this.socket)return;
       let msg:Message = new Message();
       msg.token = this.msgToken = Utils.getUUID();
       msg.clientIds = ['all'];
-      msg.content = {type:'description', ref:this.rtcPeerConnection.localDescription};
+      msg.content = {type:'description', ref:desc};
       this.socket.send('message', msg);
     });
   }
 
   ngOnInit(){
-    this.createConnection();
     if(!navigator.getUserMedia){
       console.log("浏览器不支持webRTC!");
       return;
@@ -74,8 +83,6 @@ export class VideoChatComponent implements OnInit {
     }, localMediaStream => {
       //捕获视频
       this.localStream = localMediaStream;
-      
-      this.rtcPeerConnection.addStream(this.localStream);
     }, err => {
       console.log('rejected!', err);
     });
@@ -102,7 +109,7 @@ export class VideoChatComponent implements OnInit {
       this.remoteStream = evt.stream;
     }
     
-    // this.rtcPeerConnection.addStream(this.localStream);
+    this.rtcPeerConnection.addStream(this.localStream);
   }
 
   ngOnDestroy(){
@@ -110,6 +117,8 @@ export class VideoChatComponent implements OnInit {
       this.rtcPeerConnection.close();
       this.rtcPeerConnection = null;
     }
+    this.localStream = null;
+    this.remoteStream = null;
     this.socket.unenrollCallback(this.callbackId);
   }
 }
