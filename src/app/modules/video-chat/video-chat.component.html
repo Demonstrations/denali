@@ -1,0 +1,7 @@
+<button type="button" (click)="createConnection()">connect</button>
+<div *ngIf="localStream">
+  <video [srcObject]="localStream" autoplay></video>
+</div>
+<div *ngIf="remoteStream">
+  <video [srcObject]="remoteStream" autoplay></video>
+</div>
