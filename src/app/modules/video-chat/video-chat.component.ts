@@ -21,7 +21,7 @@ export class VideoChatComponent implements OnInit {
   //回调函数Id
   callbackId:string = "";
   //最后发出的消息标识
-  msgToken:string = "";
+  msgToken:string[] = [];
   //本地连接
   rtcPeerConnection:RTCPeerConnection;
   //
@@ -34,7 +34,11 @@ export class VideoChatComponent implements OnInit {
   msgProcess(msg:any){
     // console.log(msg);
     if(!this.rtcPeerConnection)this.createConnection();
-    if(msg.token == this.msgToken)return;
+    let index:number = this.msgToken.indexOf(msg.token);
+    if(index >= 0){
+      delete this.msgToken[index];
+      return;
+    }
     let content = msg.content;
     switch(content.type){
       case 'description':
@@ -65,10 +69,10 @@ export class VideoChatComponent implements OnInit {
     this.rtcPeerConnection.setLocalDescription(desc, () => {
       if(!this.socket)return;
       let msg:Message = new Message();
-      msg.token = this.msgToken = Utils.getUUID();
       msg.clientIds = ['all'];
       msg.content = {type:'description', ref:desc};
       this.socket.send('message', msg);
+      this.msgToken.push(msg.token = Utils.getUUID());
     });
   }
 
@@ -94,10 +98,10 @@ export class VideoChatComponent implements OnInit {
       if(!evt.candidate)return;
       // console.log('has1 ice candidate', evt.candidate);
       let msg:Message = new Message();
-      msg.token = this.msgToken = Utils.getUUID();
       msg.clientIds = ['all'];
       msg.content = {type:'candidate', ref:evt.candidate};
       this.socket.send('message', msg);
+      this.msgToken.push(msg.token = Utils.getUUID());
     };
     this.rtcPeerConnection.onnegotiationneeded = () => {
       this.rtcPeerConnection.createOffer(this.setDescription.bind(this), (err) => {
