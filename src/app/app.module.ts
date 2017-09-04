@@ -3,6 +3,7 @@ import { NgModule } from '@angular/core';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing/app-routing.module';
 import {SocketService} from './service/socket.service';
+import {MdTabsModule} from '@angular/material';
 
 @NgModule({
   declarations: [
@@ -10,7 +11,8 @@ import {SocketService} from './service/socket.service';
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
+    MdTabsModule
   ],
   providers: [SocketService],
   bootstrap: [AppComponent]

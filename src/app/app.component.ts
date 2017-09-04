@@ -6,5 +6,8 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'app';
+  routes = [
+    {name:"daily", path:"/daily"},
+    {name:"video", path:"/video-chat"}
+  ];
 }

@@ -1,7 +1,6 @@
 <!--The content below is only a placeholder and can be replaced.-->
-<h1>{{title | uppercase}}</h1>
-<nav>
-  <a routerLink="/daily" routerLinkActive="active">daily</a>
-  <a routerLink="/video-chat" routerLinkActive="active">video chat</a>
+<nav md-tab-nav-bar>
+  <a md-tab-link *ngFor="let route of routes" [active]="rla.isActive" 
+    [routerLink]="route.path" routerLinkActive #rla="routerLinkActive">{{route.name}}</a>
 </nav>
 <router-outlet></router-outlet>

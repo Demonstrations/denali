@@ -1,0 +1,16 @@
+.media-container > div{
+    position: absolute;
+}
+.local-media{
+    width: 200px;
+    height: 150px;
+    right: 0;
+    bottom: 0;
+}
+.remote-media{
+    width: 800px;
+    height: 600px;
+}
+.flipx{
+    transform: scaleX(-1);
+}

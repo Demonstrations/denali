@@ -10,8 +10,8 @@ import {Utils} from '../../utils/utils';
 })
 export class VideoChatComponent implements OnInit {
 
-  localStream:MediaStream = null;
-  remoteStream:MediaStream = null;
+  localStream:MediaStream = new MediaStream();
+  remoteStream:MediaStream = new MediaStream();
   //ice server
   iceServer:RTCConfiguration = {
     iceServers: [{
@@ -33,7 +33,7 @@ export class VideoChatComponent implements OnInit {
 
   msgProcess(msg:any){
     // console.log(msg);
-    if(!this.rtcPeerConnection)this.createConnection();
+    if(!this.rtcPeerConnection)this.connect();
     let index:number = this.msgToken.indexOf(msg.token);
     if(index >= 0){
       delete this.msgToken[index];
@@ -65,7 +65,7 @@ export class VideoChatComponent implements OnInit {
   }
 
   setDescription(desc:RTCSessionDescription){
-    if(!this.rtcPeerConnection)this.createConnection();
+    if(!this.rtcPeerConnection)this.connect();
     this.rtcPeerConnection.setLocalDescription(desc, () => {
       if(!this.socket)return;
       let msg:Message = new Message();
@@ -77,14 +77,14 @@ export class VideoChatComponent implements OnInit {
   }
 
   ngOnInit(){
-    if(!navigator.getUserMedia){
+    if(!navigator.mediaDevices.getUserMedia){
       console.log("浏览器不支持webRTC!");
       return;
     }
-    navigator.getUserMedia({
+    navigator.mediaDevices.getUserMedia({
       video:true,
       audio:true
-    }, localMediaStream => {
+    }).then(localMediaStream => {
       //捕获视频
       this.localStream = localMediaStream;
     }, err => {
@@ -92,7 +92,7 @@ export class VideoChatComponent implements OnInit {
     });
   }
 
-  createConnection(){
+  connect(){
     this.rtcPeerConnection = new RTCPeerConnection(this.iceServer);
     this.rtcPeerConnection.onicecandidate = evt => {
       if(!evt.candidate)return;

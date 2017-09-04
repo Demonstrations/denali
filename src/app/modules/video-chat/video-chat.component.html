@@ -1,7 +1,9 @@
-<button type="button" (click)="createConnection()">connect</button>
-<div *ngIf="localStream">
-  <video [srcObject]="localStream" autoplay></video>
-</div>
-<div *ngIf="remoteStream">
-  <video [srcObject]="remoteStream" autoplay></video>
+<button type="button" (click)="connect()">connect</button>
+<div class="media-container">
+  <div class="remote-media">
+    <video class="flipx" [srcObject]="remoteStream" autoplay></video>
+  </div>
+  <div class="local-media">
+    <video class="flipx" [srcObject]="localStream" autoplay muted></video>
+  </div>
 </div>
