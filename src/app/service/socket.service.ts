@@ -6,7 +6,7 @@ import {Utils} from '../utils/utils';
 @Injectable()
 export class SocketService {
   //socket服务端地址
-  host:string = "ws://localhost:8088";
+  host:string = "https://localhost:8088";
   //当前连接状态
   connected:boolean = false;
   //socket实例
